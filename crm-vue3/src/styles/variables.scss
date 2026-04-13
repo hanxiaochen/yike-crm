@@ -1,0 +1,83 @@
+// 主题颜色
+$primary-color: #409EFF;
+$success-color: #67C23A;
+$warning-color: #E6A23C;
+$danger-color: #F56C6C;
+$info-color: #909399;
+
+// 侧边栏主题色
+$side-dark-bg: #304156;
+$side-dark-text: #bfcbd9;
+$side-dark-hover-bg: #263445;
+$side-dark-active-bg: #263445;
+$side-dark-active-text: #409EFF;
+
+// 文字颜色
+$text-primary: #303133;
+$text-regular: #606266;
+$text-secondary: #909399;
+$text-placeholder: #C0C4CC;
+
+// 边框颜色
+$border-base: #DCDFE6;
+$border-light: #E4E7ED;
+$border-lighter: #EBEEF5;
+$border-extra-light: #F2F6FC;
+
+// 背景颜色
+$bg-color: #FFFFFF;
+$bg-page: #F5F7FA;
+$bg-overlay: #FFFFFF;
+
+// 阴影
+$shadow-base: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+$shadow-light: 0 2px 8px 0 rgba(0, 0, 0, 0.06);
+$shadow-dark: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
+
+// 圆角
+$border-radius-base: 8px;
+$border-radius-small: 4px;
+$border-radius-large: 12px;
+
+// 字体大小
+$font-size-base: 14px;
+$font-size-small: 12px;
+$font-size-large: 16px;
+$font-size-extra-large: 18px;
+
+// 间距
+$spacing-base: 16px;
+$spacing-small: 8px;
+$spacing-large: 24px;
+
+// 侧边栏
+$side-bar-width: 220px;
+$side-bar-collapsed-width: 64px;
+
+// 导航栏
+$nav-bar-height: 60px;
+
+// 标签页
+$tags-view-height: 40px;
+
+// 导出变量
+:export {
+  primaryColor: $primary-color;
+  successColor: $success-color;
+  warningColor: $warning-color;
+  dangerColor: $danger-color;
+  infoColor: $info-color;
+  textPrimary: $text-primary;
+  textRegular: $text-regular;
+  textSecondary: $text-secondary;
+  textPlaceholder: $text-placeholder;
+  borderBase: $border-base;
+  borderLight: $border-light;
+  borderLighter: $border-lighter;
+  bgColor: $bg-color;
+  bgPage: $bg-page;
+  sideBarWidth: $side-bar-width;
+  sideBarCollapsedWidth: $side-bar-collapsed-width;
+  navBarHeight: $nav-bar-height;
+  tagsViewHeight: $tags-view-height;
+}

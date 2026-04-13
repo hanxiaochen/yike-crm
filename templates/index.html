@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRM管理系统 - 奇智科技</title>
+<style>
+:root{--primary:#1a73e8;--primary-dark:#1557b0;--danger:#d93025;--success:#188038;--warning:#f9ab00;--bg:#f0f2f5;--sidebar:#1e293b;--sidebar-hover:#334155;--text:#1f2937;--text-light:#6b7280;--card:#fff;--border:#e5e7eb;--radius:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+/* 侧边栏 */
+.sidebar{width:220px;background:var(--sidebar);color:#fff;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;z-index:100;transition:transform .3s}
+.sidebar .logo{padding:20px;font-size:18px;font-weight:700;border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.sidebar .logo span{color:#60a5fa}
+.sidebar nav a{display:flex;align-items:center;padding:12px 20px;color:rgba(255,255,255,.7);text-decoration:none;font-size:14px;transition:all .2s;border-left:3px solid transparent}
+.sidebar nav a:hover,.sidebar nav a.active{background:var(--sidebar-hover);color:#fff;border-left-color:var(--primary)}
+.sidebar nav a .icon{margin-right:10px;width:20px;text-align:center;font-size:16px}
+.sidebar nav .divider{border-top:1px solid rgba(255,255,255,.1);margin:8px 0}
+/* 主内容区 */
+.main{margin-left:220px;flex:1;min-height:100vh}
+.topbar{background:var(--card);padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h2{font-size:18px}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.user-info{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-light)}
+.user-info .name{font-weight:600;color:var(--text)}
+.user-info .role-tag{background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:11px}
+.content{padding:24px}
+/* 卡片 */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.stat-card .label{font-size:13px;color:var(--text-light);margin-bottom:8px}
+.stat-card .value{font-size:28px;font-weight:700}
+.stat-card .value.blue{color:var(--primary)}
+.stat-card .value.green{color:var(--success)}
+.stat-card .value.orange{color:var(--warning)}
+.stat-card .value.red{color:var(--danger)}
+.card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:16px}
+.card h3{font-size:16px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+/* 表格 */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:#f8fafc;padding:10px 12px;text-align:left;font-weight:600;color:var(--text-light);font-size:13px;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover{background:#f8fafc}
+/* 按钮 */
+.btn{display:inline-flex;align-items:center;padding:8px 16px;border:none;border-radius:6px;font-size:13px;cursor:pointer;transition:all .2s;font-family:inherit;gap:4px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#b71c1c}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#14532d}
+.btn-warning{background:var(--warning);color:#fff}.btn-warning:hover{background:#e09900}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:#f8fafc}
+/* 标签 */
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:500}
+.tag-blue{background:#dbeafe;color:#1d4ed8}
+.tag-green{background:#dcfce7;color:#166534}
+.tag-orange{background:#fef3c7;color:#92400e}
+.tag-red{background:#fee2e2;color:#991b1b}
+.tag-gray{background:#f3f4f6;color:#374151}
+.tag-purple{background:#f3e8ff;color:#7c3aed}
+/* 可点击链接 */
+.link-btn{color:var(--primary);cursor:pointer;text-decoration:underline;font-weight:500;background:none;border:none;font-size:inherit;font-family:inherit;padding:0}
+.link-btn:hover{color:var(--primary-dark);text-decoration:none}
+/* 模态框 */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:12px;width:90%;max-width:560px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-lg{max-width:720px}
+.modal-xl{max-width:800px}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:16px;margin:0;border:none;padding:0}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-light);width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--bg)}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+/* 详情弹窗 */
+.detail-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.detail-header h3{font-size:20px;margin:0;flex:1}
+.detail-header .btn-sm{font-size:12px}
+.detail-section{margin-bottom:20px}
+.detail-section h4{font-size:14px;color:var(--text-light);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.detail-info{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:14px}
+.detail-info .item{display:flex;gap:4px}
+.detail-info .item .label{color:var(--text-light);white-space:nowrap}
+.detail-info .item .val{font-weight:500}
+.detail-list{list-style:none;font-size:13px}
+.detail-list li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.detail-list li:last-child{border-bottom:none}
+.detail-list .item-main{flex:1;min-width:0}
+.detail-list .item-main .name{font-weight:600}
+.detail-list .item-sub{color:var(--text-light);font-size:12px}
+/* 表单 */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;transition:border .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,115,232,.1)}
+.form-group textarea{min-height:80px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+/* 权限编辑 */
+.perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.perm-module{border:1px solid var(--border);border-radius:8px;padding:12px}
+.perm-module h5{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.perm-module label{display:inline-flex;align-items:center;gap:4px;font-size:12px;margin-right:12px;margin-bottom:4px;cursor:pointer;color:var(--text)}
+.perm-module input[type=checkbox]{width:auto}
+/* 空状态 */
+.empty{text-align:center;padding:40px;color:var(--text-light);font-size:14px}
+.empty .icon{font-size:40px;margin-bottom:12px;opacity:.5}
+/* 仪表盘双列 */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.activity-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.activity-icon.visit{background:#dbeafe;color:#1d4ed8}
+.activity-icon.phone{background:#dcfce7;color:#166534}
+.activity-icon.email{background:#fef3c7;color:#92400e}
+.activity-icon.meeting{background:#f3e8ff;color:#7c3aed}
+.activity-icon.other{background:#f3f4f6;color:#374151}
+.followup-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.followup-item:last-child{border-bottom:none}
+.stage-bar{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.stage-item{padding:6px 12px;background:#f8fafc;border-radius:6px;font-size:12px;text-align:center;min-width:80px}
+.stage-item .num{font-size:16px;font-weight:700;display:block}
+/* 搜索 */
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.search-box{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0 12px;gap:8px}
+.search-box input{border:none;padding:8px 0;outline:none;font-size:14px;width:200px;font-family:inherit}
+/* 移动端菜单 */
+.menu-toggle{display:none;background:none;border:none;font-size:24px;cursor:pointer}
+/* Toast */
+.toast{position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-size:14px;z-index:999;animation:slideIn .3s;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.toast-success{background:var(--success)}
+.toast-error{background:var(--danger)}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+/* 操作按钮组 */
+.action-btns{display:flex;gap:4px;flex-wrap:nowrap}
+/* 状态开关 */
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.status-dot.active{background:var(--success)}
+.status-dot.inactive{background:var(--danger)}
+/* 响应式 */
+@media(max-width:768px){
+.sidebar{transform:translateX(-100%)}
+.sidebar.open{transform:translateX(0)}
+.main{margin-left:0}
+.menu-toggle{display:block}
+.form-row{grid-template-columns:1fr}
+.dash-grid{grid-template-columns:1fr}
+.stats-grid{grid-template-columns:1fr 1fr}
+.toolbar{flex-direction:column;align-items:stretch}
+.search-box input{width:100%}
+.detail-info{grid-template-columns:1fr}
+.perm-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo">🛡️ <span>CRM</span> 管理系统</div>
+  <nav>
+    <a href="#" onclick="showPage('dashboard')" class="active" data-page="dashboard"><span class="icon">📊</span>仪表盘</a>
+    <a href="#" onclick="showPage('organizations')" data-page="organizations"><span class="icon">🏢</span>客户管理</a>
+    <a href="#" onclick="showPage('contacts')" data-page="contacts"><span class="icon">👤</span>联系人</a>
+    <a href="#" onclick="showPage('deals')" data-page="deals"><span class="icon">💰</span>商机</a>
+    <a href="#" onclick="showPage('activities')" data-page="activities"><span class="icon">📝</span>活动记录</a>
+    <a href="#" onclick="showPage('followups')" data-page="followups"><span class="icon">📋</span>待办跟进</a>
+    <a href="#" onclick="showPage('insights')" data-page="insights"><span class="icon">🤖</span>AI洞察</a>
+    <div class="divider"></div>
+    <a href="#" onclick="showPage('users')" data-page="users" id="nav-users" style="display:none"><span class="icon">👥</span>用户管理</a>
+    <a href="#" onclick="showPage('roles')" data-page="roles" id="nav-roles" style="display:none"><span class="icon">🔐</span>角色管理</a>
+  </nav>
+</aside>
+
+<!-- 主内容区 -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <h2 id="pageTitle">仪表盘</h2>
+    </div>
+    <div class="topbar-right">
+      <div class="user-info" id="userInfo">
+        <span class="name" id="userName">-</span>
+        <span class="role-tag" id="userRole">-</span>
+      </div>
+      <button class="btn btn-sm btn-outline" onclick="doLogout()">退出登录</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- 仪表盘 -->
+    <div id="page-dashboard" class="page">
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="dash-grid">
+        <div class="card"><h3>📈 商机阶段分布</h3><div class="stage-bar" id="stageBar"></div></div>
+        <div class="card"><h3>⏰ 待办提醒</h3><div id="dashFollowups"></div></div>
+        <div class="card" style="grid-column:1/-1"><h3>🕐 最近活动</h3><div id="dashActivities"></div></div>
+      </div>
+    </div>
+    <!-- 客户管理 -->
+    <div id="page-organizations" class="page" style="display:none">
+      <div class="toolbar">
+        <div class="search-box"><span>🔍</span><input placeholder="搜索客户..." oninput="filterOrgs(this.value)"></div>
+        <button class="btn btn-primary" onclick="openOrgModal()">＋ 新增客户</button>
+      </div>
+      <div class="card"><table><thead><tr><th>名称</th><th>类型</th><th>行业</th><th>规模</th><th>网盾</th><th>I-NOC</th><th>健康度</th><th>操作</th></tr></thead><tbody id="orgTable"></tbody></table></div>
+    </div>
+    <!-- 联系人 -->
+    <div id="page-contacts" class="page" style="display:none">
+      <div class="toolbar">
+        <div class="search-box"><span>🔍</span><input placeholder="搜索联系人..." oninput="filterContacts(this.value)"></div>
+        <button class="btn btn-primary" onclick="openContactModal()">＋ 新增联系人</button>
+      </div>
+      <div class="card"><table><thead><tr><th>姓名</th><th>职位</th><th>电话</th><th>所属单位</th><th>标签</th><th>操作</th></tr></thead><tbody id="contactTable"></tbody></table></div>
+    </div>
+    <!-- 商机 -->
+    <div id="page-deals" class="page" style="display:none">
+      <div class="toolbar">
+        <div class="search-box"><span>🔍</span><input placeholder="搜索商机..." oninput="filterDeals(this.value)"></div>
+        <button class="btn btn-primary" onclick="openDealModal()">＋ 新增商机</button>
+      </div>
+      <div class="card"><table><thead><tr><th>名称</th><th>客户</th><th>金额</th><th>阶段</th><th>产品线</th><th>联系人</th><th>操作</th></tr></thead><tbody id="dealTable"></tbody></table></div>
+    </div>
+    <!-- 活动记录 -->
+    <div id="page-activities" class="page" style="display:none">
+      <div class="toolbar">
+        <div class="search-box"><span>🔍</span><input placeholder="搜索..." oninput="filterActivities(this.value)"></div>
+        <button class="btn btn-primary" onclick="openActivityModal()">＋ 新增活动</button>
+      </div>
+      <div class="card"><table><thead><tr><th>类型</th><th>客户</th><th>联系人</th><th>内容摘要</th><th>时间</th><th>操作</th></tr></thead><tbody id="activityTable"></tbody></table></div>
+    </div>
+    <!-- 待办跟进 -->
+    <div id="page-followups" class="page" style="display:none">
+      <div class="toolbar">
+        <span></span>
+        <button class="btn btn-primary" onclick="openFollowupModal()">＋ 新增待办</button>
+      </div>
+      <div class="card"><table><thead><tr><th>内容</th><th>关联客户</th><th>关联联系人</th><th>关联商机</th><th>截止日期</th><th>状态</th><th>操作</th></tr></thead><tbody id="followupTable"></tbody></table></div>
+    </div>
+    <!-- AI洞察 -->
+    <div id="page-insights" class="page" style="display:none">
+      <div class="toolbar"><span style="font-size:14px;color:var(--text-light)">AI自动生成的客户洞察与建议</span></div>
+      <div class="card"><table><thead><tr><th>客户</th><th>类型</th><th>洞察内容</th><th>置信度</th><th>优先级</th><th>状态</th><th>操作</th></tr></thead><tbody id="insightTable"></tbody></table></div>
+    </div>
+    <!-- 用户管理 -->
+    <div id="page-users" class="page" style="display:none">
+      <div class="toolbar">
+        <span style="font-size:14px;color:var(--text-light)">管理系统用户账户</span>
+        <button class="btn btn-primary" onclick="openUserModal()">＋ 新增用户</button>
+      </div>
+      <div class="card"><table>
+        <thead><tr><th>用户名</th><th>真实姓名</th><th>角色</th><th>手机</th><th>邮箱</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead>
+        <tbody id="userTable"></tbody>
+      </table></div>
+    </div>
+    <!-- 角色管理 -->
+    <div id="page-roles" class="page" style="display:none">
+      <div class="toolbar">
+        <span style="font-size:14px;color:var(--text-light)">管理系统角色和权限配置</span>
+        <button class="btn btn-primary" onclick="openRoleModal()">＋ 新增角色</button>
+      </div>
+      <div class="card"><table>
+        <thead><tr><th>角色标识</th><th>显示名称</th><th>描述</th><th>权限数</th><th>系统角色</th><th>操作</th></tr></thead>
+        <tbody id="roleTable"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑模态框 -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox">
+    <div class="modal-header"><h3 id="modalTitle">新增</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" id="modalSave">保存</button></div>
+  </div>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="modal-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="modal modal-lg">
+    <div class="modal-header"><h3 id="detailTitle">详情</h3><button class="modal-close" onclick="closeDetail()">✕</button></div>
+    <div class="modal-body" id="detailBody"></div>
+  </div>
+</div>
+
+<script>
+// ==================== 认证 ====================
+const API = '';
+let currentUser = null;
+let orgsCache=[], contactsCache=[], dealsCache=[];
+let rolesCache=[], usersCache=[];
+
+function getToken() {
+  return localStorage.getItem('crm_token');
+}
+function logout() {
+  localStorage.removeItem('crm_token');
+  localStorage.removeItem('crm_user');
+  window.location.href = '/login';
+}
+async function checkAuth() {
+  const token = getToken();
+  if (!token) { window.location.href = '/login'; return; }
+  try {
+    const r = await fetch('/api/auth/me', {headers:{'Authorization':'Bearer '+token}});
+    if (r.status === 401) { logout(); return; }
+    if (!r.ok) { logout(); return; }
+    currentUser = await r.json();
+    // 显示用户信息
+    document.getElementById('userName').textContent = currentUser.real_name || currentUser.username;
+    document.getElementById('userRole').textContent = currentUser.role_name || '';
+    // 根据权限显示/隐藏管理菜单
+    if (currentUser.permissions && currentUser.permissions.users && currentUser.permissions.users.view) {
+      document.getElementById('nav-users').style.display = '';
+      document.getElementById('nav-roles').style.display = '';
+    }
+    // 加载角色列表缓存（管理页面需要）
+    if (currentUser.permissions && currentUser.permissions.users && currentUser.permissions.users.view) {
+      rolesCache = await api('/api/roles') || [];
+    }
+    init();
+  } catch(e) { logout(); }
+}
+
+async function doLogout() {
+  const token = getToken();
+  if (token) {
+    try { await fetch('/api/auth/logout', {method:'POST', headers:{'Authorization':'Bearer '+token}}); } catch(e) {}
+  }
+  logout();
+}
+
+// ==================== 页面切换 ====================
+const pageTitles = {dashboard:'仪表盘',organizations:'客户管理',contacts:'联系人',deals:'商机',activities:'活动记录',followups:'待办跟进',insights:'AI洞察',users:'用户管理',roles:'角色管理'};
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById('page-'+name).style.display = 'block';
+  document.getElementById('pageTitle').textContent = pageTitles[name] || name;
+  document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.toggle('active', a.dataset.page === name));
+  document.getElementById('sidebar').classList.remove('open');
+  if (name === 'dashboard') loadDashboard();
+  else if (name === 'organizations') loadOrgs();
+  else if (name === 'contacts') loadContacts();
+  else if (name === 'deals') loadDeals();
+  else if (name === 'activities') loadActivities();
+  else if (name === 'followups') loadFollowups();
+  else if (name === 'insights') loadInsights();
+  else if (name === 'users') loadUsers();
+  else if (name === 'roles') loadRoles();
+  return false;
+}
+
+// ==================== Toast ====================
+function toast(msg, type='success') {
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ==================== API工具 ====================
+async function api(url, opts={}) {
+  try {
+    const headers = {'Content-Type':'application/json'};
+    const token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const r = await fetch(API + url, {headers, ...opts});
+    if (r.status === 401) { logout(); return null; }
+    return await r.json();
+  } catch(e) { toast('网络错误: ' + e.message, 'error'); return null; }
+}
+
+// ==================== 详情弹窗 ====================
+function closeDetail() { document.getElementById('detailOverlay').classList.remove('show'); }
+
+async function showOrgDetail(id) {
+  const o = await api('/api/organizations/'+id+'/detail');
+  if (!o || o.error) { toast('获取详情失败','error'); return; }
+  const typeMap = {final_customer:'终端客户',partner:'合作伙伴',government:'政府',financial:'金融',energy:'能源',military:'军工',undecided:'待定'};
+  const stageTag = {初期沟通:'tag-blue',需求确认:'tag-blue',方案报价:'tag-purple',商务谈判:'tag-orange',合同签约:'tag-green',审批中:'tag-purple',已签约:'tag-green',已交付:'tag-green',已丢单:'tag-red'};
+  const statusTag = {待处理:'tag-orange',进行中:'tag-blue',已完成:'tag-green',已过期:'tag-red',已取消:'tag-gray'};
+  document.getElementById('detailTitle').textContent = o.name || '客户详情';
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-header">
+      <h3>🏢 ${o.name}</h3>
+      <button class="btn btn-sm btn-outline" onclick="closeDetail();openOrgModal(${o.id})">✏️ 编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="closeDetail();delOrg(${o.id})">🗑️ 删除</button>
+    </div>
+    <div class="detail-section">
+      <h4>📋 基本信息</h4>
+      <div class="detail-info">
+        <div class="item"><span class="label">类型：</span><span class="val">${typeMap[o.type]||o.type||'-'}</span></div>
+        <div class="item"><span class="label">行业：</span><span class="val">${o.industry||'-'}</span></div>
+        <div class="item"><span class="label">规模：</span><span class="val">${o.scale||'-'}</span></div>
+        <div class="item"><span class="label">安全等级：</span><span class="val">${o.security_level||'-'}</span></div>
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>📞 联系方式</h4>
+      <div class="detail-info">
+        <div class="item"><span class="label">电话：</span><span class="val">${o.phone||'-'}</span></div>
+        <div class="item"><span class="label">邮箱：</span><span class="val">${o.email||'-'}</span></div>
+      </div>
+      <div class="detail-info" style="margin-top:4px">
+        <div class="item"><span class="label">地址：</span><span class="val">${o.address||'-'}</span></div>
+      </div>
+    </div>
+    ${o.notes?`<div class="detail-section"><h4>📝 备注</h4><p style="font-size:14px;color:var(--text-light)">${o.notes}</p></div>`:''}
+    <div class="detail-section">
+      <h4>👥 关联联系人 (${(o.contacts||[]).length})</h4>
+      ${(o.contacts||[]).length ? `<ul class="detail-list">${o.contacts.map(c=>`<li><div class="item-main"><button class="link-btn" onclick="closeDetail();setTimeout(()=>showContactDetail(${c.id}),300)">${c.name}</button><div class="item-sub">${c.position||''} ${c.phone?'· '+c.phone:''}</div></div></li>`).join('')}</ul>` : '<div class="empty">暂无关联联系人</div>'}
+    </div>
+    <div class="detail-section">
+      <h4>💰 关联商机 (${(o.deals||[]).length})</h4>
+      ${(o.deals||[]).length ? `<ul class="detail-list">${o.deals.map(d=>`<li><div class="item-main"><button class="link-btn" onclick="closeDetail();setTimeout(()=>showDealDetail(${d.id}),300)">${d.name}</button><div class="item-sub"><span class="tag ${stageTag[d.stage]||'tag-gray'}">${d.stage}</span> · ${fmtMoney(d.amount)}</div></div></li>`).join('')}</ul>` : '<div class="empty">暂无关联商机</div>'}
+    </div>
+    <div class="detail-section">
+      <h4>📝 相关活动 (${(o.activities||[]).length})</h4>
+      ${(o.activities||[]).length ? `<ul class="detail-list">${o.activities.slice(0,5).map(a=>`<li><div class="item-main"><span class="tag ${a.type==='拜访'?'tag-blue':a.type==='电话'?'tag-green':a.type==='邮件'?'tag-orange':a.type==='会议'?'tag-purple':'tag-gray'}">${a.type}</span> ${a.summary||''}</div><div class="item-sub">${a.contact_name||''} · ${fmtTime(a.created_at)}</div></li>`).join('')}</ul>` : '<div class="empty">暂无相关活动</div>'}
+    </div>
+    <div class="detail-section">
+      <h4>📋 待办跟进 (${(o.followups||[]).length})</h4>
+      ${(o.followups||[]).length ? `<ul class="detail-list">${o.followups.map(f=>`<li><div class="item-main">${f.content}</div><div><span class="tag ${statusTag[f.status]||'tag-gray'}">${f.status}</span> ${f.due_date||''}</div></li>`).join('')}</ul>` : '<div class="empty">暂无待办</div>'}
+    </div>`;
+  document.getElementById('detailOverlay').classList.add('show');
+}
+
+async function showContactDetail(id) {
+  const c = await api('/api/contacts/'+id+'/detail');
+  if (!c || c.error) { toast('获取详情失败','error'); return; }
+  const stageTag = {初期沟通:'tag-blue',需求确认:'tag-blue',方案报价:'tag-purple',商务谈判:'tag-orange',合同签约:'tag-green',审批中:'tag-purple',已签约:'tag-green',已交付:'tag-green',已丢单:'tag-red'};
+  document.getElementById('detailTitle').textContent = c.name || '联系人详情';
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-header">
+      <h3>👤 ${c.name}${c.position?' - '+c.position:''}</h3>
+      <button class="btn btn-sm btn-outline" onclick="closeDetail();openContactModal(${c.id})">✏️ 编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="closeDetail();delContact(${c.id})">🗑️ 删除</button>
+    </div>
+    <div class="detail-section">
+      <h4>📋 基本信息</h4>
+      <div class="detail-info">
+        <div class="item"><span class="label">职位：</span><span class="val">${c.position||'-'}</span></div>
+        <div class="item"><span class="label">电话：</span><span class="val">${c.phone||'-'}</span></div>
+        <div class="item"><span class="label">邮箱：</span><span class="val">${c.email||'-'}</span></div>
+        <div class="item"><span class="label">所属单位：</span><span class="val">${c.org_name ? '<button class=\"link-btn\" onclick=\"closeDetail();setTimeout(()=>showOrgDetail('+c.organization_id+'),300)\">'+c.org_name+'</button>' : '-'}</span></div>
+      </div>
+      ${c.tags?`<div class="detail-info" style="margin-top:4px"><div class="item"><span class="label">标签：</span><span class="val">${c.tags.split(',').map(t=>'<span class=\"tag tag-blue\">'+t.trim()+'</span>').join(' ')}</span></div></div>`:''}
+    </div>
+    ${c.notes?`<div class="detail-section"><h4>📝 备注</h4><p style="font-size:14px;color:var(--text-light)">${c.notes}</p></div>`:''}
+    <div class="detail-section">
+      <h4>💰 关联商机 (${(c.deals||[]).length})</h4>
+      ${(c.deals||[]).length ? `<ul class="detail-list">${c.deals.map(d=>`<li><div class="item-main"><button class="link-btn" onclick="closeDetail();setTimeout(()=>showDealDetail(${d.id}),300)">${d.name}</button><div class="item-sub">${d.org_name||''} · <span class="tag ${stageTag[d.stage]||'tag-gray'}">${d.stage}</span> · ${fmtMoney(d.amount)}</div></div></li>`).join('')}</ul>` : '<div class="empty">暂无关联商机</div>'}
+    </div>
+    <div class="detail-section">
+      <h4>📝 相关活动 (${(c.activities||[]).length})</h4>
+      ${(c.activities||[]).length ? `<ul class="detail-list">${c.activities.slice(0,5).map(a=>`<li><div class="item-main"><span class="tag ${a.type==='拜访'?'tag-blue':a.type==='电话'?'tag-green':a.type==='邮件'?'tag-orange':a.type==='会议'?'tag-purple':'tag-gray'}">${a.type}</span> ${a.summary||''}</div><div class="item-sub">${a.org_name||''} · ${fmtTime(a.created_at)}</div></li>`).join('')}</ul>` : '<div class="empty">暂无相关活动</div>'}
+    </div>`;
+  document.getElementById('detailOverlay').classList.add('show');
+}
+
+async function showDealDetail(id) {
+  const d = await api('/api/deals/'+id+'/detail');
+  if (!d || d.error) { toast('获取详情失败','error'); return; }
+  const stageTag = {初期沟通:'tag-blue',需求确认:'tag-blue',方案报价:'tag-purple',商务谈判:'tag-orange',合同签约:'tag-green',审批中:'tag-purple',已签约:'tag-green',已交付:'tag-green',已丢单:'tag-red'};
+  const statusTag = {待处理:'tag-orange',进行中:'tag-blue',已完成:'tag-green',已过期:'tag-red',已取消:'tag-gray'};
+  document.getElementById('detailTitle').textContent = d.name || '商机详情';
+  document.getElementById('detailBody').innerHTML = `
+    <div class="detail-header">
+      <h3>💰 ${d.name}</h3>
+      <button class="btn btn-sm btn-outline" onclick="closeDetail();openDealModal(${d.id})">✏️ 编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="closeDetail();delDeal(${d.id})">🗑️ 删除</button>
+    </div>
+    <div class="detail-section">
+      <h4>📋 基本信息</h4>
+      <div class="detail-info">
+        <div class="item"><span class="label">金额：</span><span class="val" style="color:var(--primary);font-weight:700">${fmtMoney(d.amount)}</span></div>
+        <div class="item"><span class="label">阶段：</span><span class="val"><span class="tag ${stageTag[d.stage]||'tag-gray'}">${d.stage}</span></span></div>
+        <div class="item"><span class="label">产品线：</span><span class="val">${d.product_line||'-'}</span></div>
+        <div class="item"><span class="label">客户：</span><span class="val">${d.org_name ? '<button class=\"link-btn\" onclick=\"closeDetail();setTimeout(()=>showOrgDetail('+d.organization_id+'),300)\">'+d.org_name+'</button>' : '-'}</span></div>
+        <div class="item"><span class="label">联系人：</span><span class="val">${d.contact_name ? '<button class=\"link-btn\" onclick=\"closeDetail();setTimeout(()=>showContactDetail('+d.contact_id+'),300)\">'+d.contact_name+'</button>' : '-'}</span></div>
+      </div>
+    </div>
+    ${d.notes?`<div class="detail-section"><h4>📝 备注</h4><p style="font-size:14px;color:var(--text-light)">${d.notes}</p></div>`:''}
+    <div class="detail-section">
+      <h4>📝 相关活动 (${(d.activities||[]).length})</h4>
+      ${(d.activities||[]).length ? `<ul class="detail-list">${d.activities.slice(0,5).map(a=>`<li><div class="item-main"><span class="tag ${a.type==='拜访'?'tag-blue':a.type==='电话'?'tag-green':a.type==='邮件'?'tag-orange':a.type==='会议'?'tag-purple':'tag-gray'}">${a.type}</span> ${a.summary||''}</div><div class="item-sub">${a.contact_name||''} · ${fmtTime(a.created_at)}</div></li>`).join('')}</ul>` : '<div class="empty">暂无相关活动</div>'}
+    </div>
+    <div class="detail-section">
+      <h4>📋 相关待办 (${(d.followups||[]).length})</h4>
+      ${(d.followups||[]).length ? `<ul class="detail-list">${d.followups.map(f=>`<li><div class="item-main">${f.content}</div><div><span class="tag ${statusTag[f.status]||'tag-gray'}">${f.status}</span> ${f.due_date||''}</div></li>`).join('')}</ul>` : '<div class="empty">暂无相关待办</div>'}
+    </div>`;
+  document.getElementById('detailOverlay').classList.add('show');
+}
+
+// ==================== 仪表盘 ====================
+async function loadDashboard() {
+  const d = await api('/api/dashboard');
+  if (!d || (!d.org_count && d.org_count !== 0)) return;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="label">客户总数</div><div class="value blue">${d.org_count}</div></div>
+    <div class="stat-card"><div class="label">联系人</div><div class="value green">${d.contact_count}</div></div>
+    <div class="stat-card"><div class="label">商机总金额</div><div class="value orange">${(d.deal_total_amount/10000).toFixed(0)}万</div></div>
+    <div class="stat-card"><div class="label">商机数量</div><div class="value">${d.deal_count}</div></div>
+    <div class="stat-card"><div class="label">AI新洞察</div><div class="value red">${d.new_insights_count}</div></div>
+  `;
+  const colors = {初期沟通:'#93c5fd',需求确认:'#60a5fa',方案报价:'#3b82f6',商务谈判:'#f59e0b',合同签约:'#10b981',审批中:'#8b5cf6',已签约:'#22c55e',已交付:'#14b8a6',已丢单:'#ef4444'};
+  document.getElementById('stageBar').innerHTML = d.deal_stages.map(s => `
+    <div class="stage-item" style="border-left:3px solid ${colors[s.stage]||'#94a3b8'}">
+      <span class="num">${s.cnt||0}</span>${s.stage}<br><small>${((s.amount||0)/10000).toFixed(0)}万</small>
+    </div>`).join('') || '<div class="empty">暂无商机数据</div>';
+  document.getElementById('dashFollowups').innerHTML = d.pending_followups.map(f => `
+    <div class="followup-item">
+      <div><span class="tag ${f.due_date&&f.due_date<new Date().toISOString().slice(0,10)?'tag-red':'tag-blue'}">${f.due_date||'无期限'}</span> ${f.content}</div>
+      <small>${f.org_name ? '<button class=\"link-btn\" onclick=\"showOrgDetail('+f.organization_id+')\">'+f.org_name+'</button>' : ''}</small>
+    </div>`).join('') || '<div class="empty">暂无待办</div>';
+  const typeMap = {拜访:'visit',电话:'phone',邮件:'email',会议:'meeting',其他:'other'};
+  document.getElementById('dashActivities').innerHTML = d.recent_activities.map(a => `
+    <div class="activity-item">
+      <div class="activity-icon ${typeMap[a.type]||'other'}">${{拜访:'🚶',电话:'📞',邮件:'📧',会议:'👥',其他:'📌'}[a.type]||'📌'}</div>
+      <div style="flex:1"><strong>${a.org_name ? '<button class=\"link-btn\" onclick=\"showOrgDetail('+a.organization_id+')\">'+a.org_name+'</button>' : '-'}</strong> - ${a.summary||''}<br><small style="color:var(--text-light)">${a.contact_name||''} · ${fmtTime(a.created_at)}</small></div>
+    </div>`).join('') || '<div class="empty">暂无活动</div>';
+}
+
+function fmtTime(t) { if(!t) return ''; return t.replace('T',' ').slice(0,16); }
+function fmtMoney(v) { if(!v) return '0'; return v >= 10000 ? (v/10000).toFixed(v%10000?1:0)+'万' : v.toLocaleString(); }
+
+// ==================== 客户管理 ====================
+async function loadOrgs() {
+  orgsCache = (await api('/api/organizations')) || [];
+  renderOrgs(orgsCache);
+}
+function renderOrgs(list) {
+  const typeMap = {final_customer:'终端客户',partner:'合作伙伴',government:'政府',financial:'金融',energy:'能源',military:'军工',undecided:'待定'};
+  document.getElementById('orgTable').innerHTML = list.map(o => `<tr>
+    <td><button class="link-btn" onclick="showOrgDetail(${o.id})">${o.name}</button></td>
+    <td>${typeMap[o.type]||o.type}</td>
+    <td>${o.industry||'-'}</td>
+    <td>${o.scale||'-'}</td>
+    <td>${o.using_netshield?'<span class="tag tag-green">✓</span>':'<span class="tag tag-gray">-</span>'}</td>
+    <td>${o.using_inoc?'<span class="tag tag-green">✓</span>':'<span class="tag tag-gray">-</span>'}</td>
+    <td>${o.health_score!=null?`<span class="tag ${o.health_score>=80?'tag-green':o.health_score>=50?'tag-orange':'tag-red'}">${o.health_score}</span>`:'-'}</td>
+    <td>
+      <button class="btn btn-sm btn-outline" onclick="openOrgModal(${o.id})">编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="delOrg(${o.id})">删除</button>
+    </td></tr>`).join('') || '<tr><td colspan="8" class="empty">暂无客户数据</td></tr>';
+}
+function filterOrgs(kw) { renderOrgs(orgsCache.filter(o => !kw || o.name.includes(kw) || (o.industry||'').includes(kw))); }
+function openOrgModal(id) {
+  const o = id ? orgsCache.find(x=>x.id===id) : {};
+  document.getElementById('modalTitle').textContent = id ? '编辑客户' : '新增客户';
+  document.getElementById('modalBox').classList.remove('modal-lg','modal-xl');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-group"><label>名称 *</label><input id="f_name" value="${o.name||''}"></div>
+    <div class="form-row">
+      <div class="form-group"><label>类型</label><select id="f_type">
+        ${['final_customer|终端客户','partner|合作伙伴','government|政府','financial|金融','energy|能源','military|军工'].map(x=>{const[k,v]=x.split('|');return`<option value="${k}"${o.type===k?' selected':''}>${v}</option>`}).join('')}
+      </select></div>
+      <div class="form-group"><label>行业</label><input id="f_industry" value="${o.industry||''}" placeholder="如：电力、金融、政府"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>规模</label><select id="f_scale">
+        ${['|未知','small|小型','medium|中型','large|大型','enterprise|超大型','critical_infrastructure|关键基础设施'].map(x=>{const[k,v]=x.split('|');return`<option value="${k}"${o.scale===k?' selected':''}>${v}</option>`}).join('')}
+      </select></div>
+      <div class="form-group"><label>安全等级</label><select id="f_security_level">
+        ${['basic|基本','standard|标准','enhanced|增强','classified|涉密'].map(x=>{const[k,v]=x.split('|');return`<option value="${k}"${o.security_level===k?' selected':''}>${v}</option>`}).join('')}
+      </select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>电话</label><input id="f_phone" value="${o.phone||''}"></div>
+      <div class="form-group"><label>邮箱</label><input id="f_email" value="${o.email||''}"></div>
+    </div>
+    <div class="form-group"><label>地址</label><input id="f_address" value="${o.address||''}"></div>
+    <div class="form-group"><label>备注</label><textarea id="f_notes">${o.notes||''}</textarea></div>`;
+  document.getElementById('modalSave').onclick = async () => {
+    const data = {name:f_name.value,type:f_type.value,industry:f_industry.value,scale:f_scale.value,
+      security_level:f_security_level.value,phone:f_phone.value,email:f_email.value,address:f_address.value,notes:f_notes.value};
+    if(!data.name){toast('请输入名称','error');return;}
+    if(id) await api('/api/organizations/'+id,{method:'PUT',body:JSON.stringify(data)});
+    else await api('/api/organizations',{method:'POST',body:JSON.stringify(data)});
+    closeModal(); loadOrgs(); toast(id?'更新成功':'创建成功');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+async function delOrg(id) { if(!confirm('确认删除？')) return; await api('/api/organizations/'+id,{method:'DELETE'}); loadOrgs(); toast('已删除'); }
+
+// ==================== 联系人 ====================
+async function loadContacts() {
+  contactsCache = (await api('/api/contacts')) || [];
+  renderContacts(contactsCache);
+}
+function renderContacts(list) {
+  document.getElementById('contactTable').innerHTML = list.map(c => `<tr>
+    <td><button class="link-btn" onclick="showContactDetail(${c.id})">${c.name}</button></td>
+    <td>${c.position||'-'}</td>
+    <td>${c.phone||'-'}</td>
+    <td>${c.org_name ? '<button class=\"link-btn\" onclick=\"showOrgDetail('+c.organization_id+')\">'+c.org_name+'</button>' : '-'}</td>
+    <td>${c.tags?c.tags.split(',').map(t=>`<span class="tag tag-blue">${t.trim()}</span>`).join(' '):'-'}</td>
+    <td>
+      <button class="btn btn-sm btn-outline" onclick="openContactModal(${c.id})">编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="delContact(${c.id})">删除</button>
+    </td></tr>`).join('') || '<tr><td colspan="6" class="empty">暂无联系人</td></tr>';
+}
+function filterContacts(kw) { renderContacts(contactsCache.filter(c => !kw || c.name.includes(kw) || (c.org_name||'').includes(kw))); }
+function openContactModal(id) {
+  const c = id ? contactsCache.find(x=>x.id===id) : {};
+  const orgOpts = orgsCache.map(o => `<option value="${o.id}"${c.organization_id==o.id?' selected':''}>${o.name}</option>`).join('');
+  document.getElementById('modalTitle').textContent = id ? '编辑联系人' : '新增联系人';
+  document.getElementById('modalBox').classList.remove('modal-lg','modal-xl');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-row">
+      <div class="form-group"><label>姓名 *</label><input id="f_name" value="${c.name||''}"></div>
+      <div class="form-group"><label>职位</label><input id="f_position" value="${c.position||''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>电话</label><input id="f_phone" value="${c.phone||''}"></div>
+      <div class="form-group"><label>邮箱</label><input id="f_email" value="${c.email||''}"></div>
+    </div>
+    <div class="form-group"><label>所属单位</label><select id="f_org"><option value="">-- 选择 --</option>${orgOpts}</select></div>
+    <div class="form-group"><label>标签（逗号分隔）</label><input id="f_tags" value="${c.tags||''}"></div>
+    <div class="form-group"><label>备注</label><textarea id="f_notes">${c.notes||''}</textarea></div>`;
+  document.getElementById('modalSave').onclick = async () => {
+    const data = {name:f_name.value,position:f_position.value,phone:f_phone.value,email:f_email.value,
+      organization_id:f_org.value||null,tags:f_tags.value,notes:f_notes.value};
+    if(!data.name){toast('请输入姓名','error');return;}
+    if(id) await api('/api/contacts/'+id,{method:'PUT',body:JSON.stringify(data)});
+    else await api('/api/contacts',{method:'POST',body:JSON.stringify(data)});
+    closeModal(); loadContacts(); toast(id?'更新成功':'创建成功');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+async function delContact(id) { if(!confirm('确认删除？')) return; await api('/api/contacts/'+id,{method:'DELETE'}); loadContacts(); toast('已删除'); }
+
+// ==================== 商机 ====================
+async function loadDeals() {
+  dealsCache = (await api('/api/deals')) || [];
+  renderDeals(dealsCache);
+}
+function renderDeals(list) {
+  const stageTag = {初期沟通:'tag-blue',需求确认:'tag-blue',方案报价:'tag-purple',商务谈判:'tag-orange',合同签约:'tag-green',审批中:'tag-purple',已签约:'tag-green',已交付:'tag-green',已丢单:'tag-red'};
+  document.getElementById('dealTable').innerHTML = list.map(d => `<tr>
+    <td><button class="link-btn" onclick="showDealDetail(${d.id})">${d.name}</button></td>
+    <td>${d.org_name ? '<button class=\"link-btn\" onclick=\"showOrgDetail('+d.organization_id+')\">'+d.org_name+'</button>' : '-'}</td>
+    <td style="font-weight:600;color:var(--primary)">${fmtMoney(d.amount)}</td>
+    <td><span class="tag ${stageTag[d.stage]||'tag-gray'}">${d.stage}</span></td>
+    <td>${d.product_line||'-'}</td>
+    <td>${d.contact_name ? '<button class=\"link-btn\" onclick=\"showContactDetail('+d.contact_id+')\">'+d.contact_name+'</button>' : '-'}</td>
+    <td>
+      <button class="btn btn-sm btn-outline" onclick="openDealModal(${d.id})">编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="delDeal(${d.id})">删除</button>
+    </td></tr>`).join('') || '<tr><td colspan="7" class="empty">暂无商机</td></tr>';
+}
+function filterDeals(kw) { renderDeals(dealsCache.filter(d => !kw || d.name.includes(kw) || (d.org_name||'').includes(kw))); }
+function openDealModal(id) {
+  const d = id ? dealsCache.find(x=>x.id===id) : {};
+  const orgOpts = orgsCache.map(o => `<option value="${o.id}"${d.organization_id==o.id?' selected':''}>${o.name}</option>`).join('');
+  const contactOpts = contactsCache.map(c => `<option value="${c.id}"${d.contact_id==c.id?' selected':''}>${c.name}</option>`).join('');
+  const stages = ['初期沟通','需求确认','方案报价','商务谈判','合同签约','审批中','已签约','已交付','已丢单'];
+  document.getElementById('modalTitle').textContent = id ? '编辑商机' : '新增商机';
+  document.getElementById('modalBox').classList.remove('modal-lg','modal-xl');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-group"><label>商机名称 *</label><input id="f_name" value="${d.name||''}"></div>
+    <div class="form-row">
+      <div class="form-group"><label>客户</label><select id="f_org"><option value="">-- 选择 --</option>${orgOpts}</select></div>
+      <div class="form-group"><label>联系人</label><select id="f_contact"><option value="">-- 选择 --</option>${contactOpts}</select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>金额（元）</label><input id="f_amount" type="number" value="${d.amount||''}"></div>
+      <div class="form-group"><label>阶段</label><select id="f_stage">
+        ${stages.map(s=>`<option${d.stage===s?' selected':''}>${s}</option>`).join('')}
+      </select></div>
+    </div>
+    <div class="form-group"><label>产品线</label><input id="f_product_line" value="${d.product_line||''}" placeholder="如：主动防御+流量分析"></div>
+    <div class="form-group"><label>备注</label><textarea id="f_notes">${d.notes||''}</textarea></div>`;
+  document.getElementById('modalSave').onclick = async () => {
+    const data = {name:f_name.value,organization_id:f_org.value||null,contact_id:f_contact.value||null,
+      amount:parseFloat(f_amount.value)||0,stage:f_stage.value,product_line:f_product_line.value,notes:f_notes.value};
+    if(!data.name){toast('请输入名称','error');return;}
+    if(id) await api('/api/deals/'+id,{method:'PUT',body:JSON.stringify(data)});
+    else await api('/api/deals',{method:'POST',body:JSON.stringify(data)});
+    closeModal(); loadDeals(); toast(id?'更新成功':'创建成功');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+async function delDeal(id) { if(!confirm('确认删除？')) return; await api('/api/deals/'+id,{method:'DELETE'}); loadDeals(); toast('已删除'); }
+
+// ==================== 活动记录 ====================
+async function loadActivities() {
+  const data = (await api('/api/activities')) || [];
+  renderActivities(data);
+}
+function renderActivities(list) {
+  const typeTag = {拜访:'tag-blue',电话:'tag-green',邮件:'tag-orange',会议:'tag-purple',其他:'tag-gray'};
+  document.getElementById('activityTable').innerHTML = list.map(a => `<tr>
+    <td><span class="tag ${typeTag[a.type]||'tag-gray'}">${a.type}</span></td>
+    <td>${a.org_name ? '<button class=\"link-btn\" onclick=\"showOrgDetail('+a.organization_id+')\">'+a.org_name+'</button>' : '-'}</td>
+    <td>${a.contact_name ? '<button class=\"link-btn\" onclick=\"showContactDetail('+a.contact_id+')\">'+a.contact_name+'</button>' : '-'}</td>
+    <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${a.summary||'-'}</td>
+    <td style="white-space:nowrap">${fmtTime(a.created_at)}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="delActivity(${a.id})">删除</button></td></tr>`).join('') || '<tr><td colspan="6" class="empty">暂无活动</td></tr>';
+}
+function filterActivities(kw) { loadActivities().then(data => data && renderActivities(data.filter(a => !kw || (a.summary||'').includes(kw) || (a.org_name||'').includes(kw)))); }
+function openActivityModal() {
+  const orgOpts = orgsCache.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+  const contactOpts = contactsCache.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('modalTitle').textContent = '新增活动';
+  document.getElementById('modalBox').classList.remove('modal-lg','modal-xl');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-group"><label>类型</label><select id="f_type">
+      ${['拜访','电话','邮件','会议','其他'].map(t=>`<option>${t}</option>`).join('')}
+    </select></div>
+    <div class="form-row">
+      <div class="form-group"><label>客户</label><select id="f_org"><option value="">-- 选择 --</option>${orgOpts}</select></div>
+      <div class="form-group"><label>联系人</label><select id="f_contact"><option value="">-- 选择 --</option>${contactOpts}</select></div>
+    </div>
+    <div class="form-group"><label>内容摘要</label><textarea id="f_summary"></textarea></div>`;
+  document.getElementById('modalSave').onclick = async () => {
+    await api('/api/activities',{method:'POST',body:JSON.stringify({type:f_type.value,organization_id:f_org.value||null,contact_id:f_contact.value||null,summary:f_summary.value})});
+    closeModal(); loadActivities(); toast('创建成功');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+async function delActivity(id) { if(!confirm('确认删除？')) return; await api('/api/activities/'+id,{method:'DELETE'}); loadActivities(); toast('已删除'); }
+
+// ==================== 待办跟进 ====================
+async function loadFollowups() {
+  const data = (await api('/api/followups')) || [];
+  renderFollowups(data);
+}
+function renderFollowups(list) {
+  const statusTag = {待处理:'tag-orange',进行中:'tag-blue',已完成:'tag-green',已过期:'tag-red',已取消:'tag-gray'};
+  document.getElementById('followupTable').innerHTML = list.map(f => `<tr>
+    <td>${f.content}</td>
+    <td>${f.org_name ? '<button class=\"link-btn\" onclick=\"showOrgDetail('+f.organization_id+')\">'+f.org_name+'</button>' : '-'}</td>
+    <td>${f.contact_name ? '<button class=\"link-btn\" onclick=\"showContactDetail('+f.contact_id+')\">'+f.contact_name+'</button>' : '-'}</td>
+    <td>${f.deal_name ? '<button class=\"link-btn\" onclick=\"showDealDetail('+f.deal_id+')\">'+f.deal_name+'</button>' : '-'}</td>
+    <td>${f.due_date||'-'}</td>
+    <td><span class="tag ${statusTag[f.status]||'tag-gray'}">${f.status}</span></td>
+    <td>
+      <select onchange="updateFollowupStatus(${f.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px">
+        ${['待处理','进行中','已完成','已取消'].map(s=>`<option${f.status===s?' selected':''}>${s}</option>`).join('')}
+      </select>
+      <button class="btn btn-sm btn-danger" onclick="delFollowup(${f.id})">删除</button>
+    </td></tr>`).join('') || '<tr><td colspan="7" class="empty">暂无待办</td></tr>';
+}
+function openFollowupModal() {
+  const orgOpts = orgsCache.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+  const dealOpts = dealsCache.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+  const contactOpts = contactsCache.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  document.getElementById('modalTitle').textContent = '新增待办';
+  document.getElementById('modalBox').classList.remove('modal-lg','modal-xl');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-group"><label>内容 *</label><textarea id="f_content"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>关联客户</label><select id="f_org"><option value="">-- 选择 --</option>${orgOpts}</select></div>
+      <div class="form-group"><label>关联联系人</label><select id="f_contact"><option value="">-- 选择 --</option>${contactOpts}</select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>关联商机</label><select id="f_deal"><option value="">-- 选择 --</option>${dealOpts}</select></div>
+      <div class="form-group"><label>截止日期</label><input id="f_due" type="date"></div>
+    </div>`;
+  document.getElementById('modalSave').onclick = async () => {
+    if(!f_content.value){toast('请输入内容','error');return;}
+    await api('/api/followups',{method:'POST',body:JSON.stringify({content:f_content.value,organization_id:f_org.value||null,contact_id:f_contact.value||null,deal_id:f_deal.value||null,due_date:f_due.value||null})});
+    closeModal(); loadFollowups(); toast('创建成功');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+async function updateFollowupStatus(id, status) { await api('/api/followups/'+id,{method:'PUT',body:JSON.stringify({status})}); loadFollowups(); }
+async function delFollowup(id) { if(!confirm('确认删除？')) return; await api('/api/followups/'+id,{method:'DELETE'}); loadFollowups(); toast('已删除'); }
+
+// ==================== AI洞察 ====================
+async function loadInsights() {
+  const data = (await api('/api/ai-insights-web')) || [];
+  renderInsights(data);
+}
+function renderInsights(list) {
+  const typeMap = {churn_risk:'流失风险',upsell_opportunity:'增购机会',cross_sell:'交叉销售',health_alert:'健康预警',renewal_prediction:'续约预测'};
+  const priTag = {low:'tag-gray',medium:'tag-blue',high:'tag-orange',critical:'tag-red'};
+  const stTag = {new:'tag-purple',reviewed:'tag-blue',acted_upon:'tag-green',dismissed:'tag-gray'};
+  document.getElementById('insightTable').innerHTML = list.map(i => `<tr>
+    <td>${i.org_name ? '<button class=\"link-btn\" onclick=\"showOrgDetail('+i.organization_id+')\">'+i.org_name+'</button>' : '-'}</td>
+    <td><span class="tag tag-blue">${typeMap[i.insight_type]||i.insight_type}</span></td>
+    <td style="max-width:300px;font-size:13px">${i.insight_text}</td>
+    <td>${i.confidence_score?Math.round(i.confidence_score*100)+'%':'-'}</td>
+    <td><span class="tag ${priTag[i.priority]||'tag-gray'}">${i.priority||'-'}</span></td>
+    <td><span class="tag ${stTag[i.status]||'tag-gray'}">${{new:'新',reviewed:'已阅',acted_upon:'已处理',dismissed:'已忽略'}[i.status]||i.status}</span></td>
+    <td>
+      <select onchange="updateInsight(${i.id},this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px">
+        ${['new|新','reviewed|已阅','acted_upon|已处理','dismissed|已忽略'].map(x=>{const[k,v]=x.split('|');return`<option value="${k}"${i.status===k?' selected':''}>${v}</option>`}).join('')}
+      </select>
+    </td></tr>`).join('') || '<tr><td colspan="7" class="empty">暂无AI洞察</td></tr>';
+}
+async function updateInsight(id, status) { await api('/api/ai-insights-web/'+id,{method:'PUT',body:JSON.stringify({status})}); loadInsights(); toast('状态已更新'); }
+
+// ==================== 用户管理 ====================
+async function loadUsers() {
+  usersCache = (await api('/api/users')) || [];
+  renderUsers(usersCache);
+}
+function renderUsers(list) {
+  const myId = currentUser ? currentUser.id : 0;
+  document.getElementById('userTable').innerHTML = list.map(u => `<tr>
+    <td>${u.username}</td>
+    <td>${u.real_name||'-'}</td>
+    <td><span class="tag tag-blue">${u.role_display_name||'-'}</span></td>
+    <td>${u.phone||'-'}</td>
+    <td>${u.email||'-'}</td>
+    <td>${u.is_active ? '<span class="status-dot active"></span>启用' : '<span class="status-dot inactive"></span>禁用'}</td>
+    <td style="white-space:nowrap">${u.last_login ? fmtTime(u.last_login) : '从未登录'}</td>
+    <td class="action-btns">
+      <button class="btn btn-sm btn-outline" onclick="openUserModal(${u.id})">编辑</button>
+      <button class="btn btn-sm btn-warning" onclick="resetUserPwd(${u.id},'${u.real_name||u.username}')">重置密码</button>
+      <button class="btn btn-sm ${u.is_active?'btn-danger':'btn-success'}" onclick="toggleUserActive(${u.id})">${u.is_active?'禁用':'启用'}</button>
+      ${u.id !== myId ? `<button class="btn btn-sm btn-danger" onclick="delUser(${u.id},'${u.real_name||u.username}')">删除</button>` : ''}
+    </td></tr>`).join('') || '<tr><td colspan="8" class="empty">暂无用户</td></tr>';
+}
+function openUserModal(id) {
+  const u = id ? usersCache.find(x=>x.id===id) : {};
+  const roleOpts = rolesCache.map(r => `<option value="${r.id}"${u.role_id==r.id?' selected':''}>${r.display_name}</option>`).join('');
+  document.getElementById('modalTitle').textContent = id ? '编辑用户' : '新增用户';
+  document.getElementById('modalBox').classList.remove('modal-lg','modal-xl');
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-row">
+      <div class="form-group"><label>用户名 *</label><input id="f_username" value="${u.username||''}" ${id?'readonly':''}></div>
+      <div class="form-group"><label>真实姓名</label><input id="f_realname" value="${u.real_name||''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>手机</label><input id="f_phone" value="${u.phone||''}"></div>
+      <div class="form-group"><label>邮箱</label><input id="f_email" value="${u.email||''}"></div>
+    </div>
+    <div class="form-group"><label>角色</label><select id="f_role"><option value="">-- 选择 --</option>${roleOpts}</select></div>
+    <div class="form-group"><label>${id?'新密码（留空不修改）':'密码 *'}</label><input id="f_password" type="password" placeholder="${id?'留空不修改':'至少6位'}"></div>`;
+  document.getElementById('modalSave').onclick = async () => {
+    if(!id && !f_username.value){toast('请输入用户名','error');return;}
+    if(!id && !f_password.value){toast('请输入密码','error');return;}
+    if(f_password.value && f_password.value.length < 6){toast('密码长度至少6位','error');return;}
+    const data = {real_name:f_realname.value,phone:f_phone.value,email:f_email.value,role_id:parseInt(f_role.value)||null,is_active:true};
+    if(!id) data.username = f_username.value;
+    if(f_password.value) data.password = f_password.value;
+    if(id) await api('/api/users/'+id,{method:'PUT',body:JSON.stringify(data)});
+    else await api('/api/users',{method:'POST',body:JSON.stringify(data)});
+    closeModal(); loadUsers(); toast(id?'更新成功':'创建成功');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+async function resetUserPwd(id, name) {
+  const pwd = prompt(`请输入 ${name} 的新密码（至少6位）：`);
+  if(!pwd) return;
+  if(pwd.length < 6){toast('密码长度至少6位','error');return;}
+  const r = await api('/api/users/'+id+'/reset-password',{method:'PUT',body:JSON.stringify({password:pwd})});
+  if(r && !r.error) toast('密码已重置'); else toast(r.error||'操作失败','error');
+}
+async function toggleUserActive(id) {
+  const r = await api('/api/users/'+id+'/toggle-active',{method:'PUT'});
+  if(r && !r.error) loadUsers(); else toast(r.error||'操作失败','error');
+}
+async function delUser(id, name) {
+  if(!confirm(`确认删除用户 ${name}？`)) return;
+  const r = await api('/api/users/'+id,{method:'DELETE'});
+  if(r && !r.error) { loadUsers(); toast('已删除'); } else toast(r.error||'操作失败','error');
+}
+
+// ==================== 角色管理 ====================
+async function loadRoles() {
+  rolesCache = (await api('/api/roles')) || [];
+  renderRoles(rolesCache);
+}
+function renderRoles(list) {
+  document.getElementById('roleTable').innerHTML = list.map(r => `<tr>
+    <td><code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px">${r.role_name}</code></td>
+    <td>${r.display_name}</td>
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.description||'-'}</td>
+    <td><span class="tag tag-blue">${r.permission_count||0}</span></td>
+    <td>${r.is_system?'<span class="tag tag-purple">系统</span>':'<span class="tag tag-gray">自定义</span>'}</td>
+    <td class="action-btns">
+      <button class="btn btn-sm btn-outline" onclick="openRoleModal(${r.id})">编辑</button>
+      ${!r.is_system?`<button class="btn btn-sm btn-danger" onclick="delRole(${r.id},'${r.display_name}')">删除</button>`:''}
+    </td></tr>`).join('') || '<tr><td colspan="6" class="empty">暂无角色</td></tr>';
+}
+function openRoleModal(id) {
+  const r = id ? rolesCache.find(x=>x.id===id) : {};
+  const perms = r.permissions ? (typeof r.permissions === 'string' ? JSON.parse(r.permissions) : r.permissions) : {};
+  const isSystem = r.is_system;
+  document.getElementById('modalTitle').textContent = id ? '编辑角色' : '新增角色';
+  document.getElementById('modalBox').classList.remove('modal-lg');
+  document.getElementById('modalBox').classList.add('modal-xl');
+  
+  const modules = [
+    {key:'customers',name:'客户管理',actions:['view','create','edit','delete'],labels:['查看','新增','编辑','删除']},
+    {key:'contacts',name:'联系人管理',actions:['view','create','edit','delete'],labels:['查看','新增','编辑','删除']},
+    {key:'deals',name:'商机管理',actions:['view','create','edit','delete'],labels:['查看','新增','编辑','删除']},
+    {key:'activities',name:'活动管理',actions:['view','create','edit','delete'],labels:['查看','新增','编辑','删除']},
+    {key:'followups',name:'待办管理',actions:['view','create','edit','delete'],labels:['查看','新增','编辑','删除']},
+    {key:'insights',name:'AI洞察',actions:['view','edit'],labels:['查看','编辑']},
+    {key:'users',name:'用户管理',actions:['view','create','edit','delete'],labels:['查看','新增','编辑','删除']},
+    {key:'roles',name:'角色管理',actions:['view','create','edit','delete'],labels:['查看','新增','编辑','删除']}
+  ];
+  
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-row">
+      <div class="form-group"><label>角色标识 *</label><input id="f_role_name" value="${r.role_name||''}" placeholder="如: sales_lead" ${isSystem?'readonly':''}></div>
+      <div class="form-group"><label>显示名称 *</label><input id="f_display_name" value="${r.display_name||''}"></div>
+    </div>
+    <div class="form-group"><label>描述</label><input id="f_desc" value="${r.description||''}"></div>
+    <div class="form-group"><label>权限配置</label>
+      <div class="perm-grid">
+        ${modules.map(m => `
+          <div class="perm-module">
+            <h5>${m.name}</h5>
+            ${m.actions.map((a,i) => `<label><input type="checkbox" data-mod="${m.key}" data-act="${a}" ${perms[m.key]&&perms[m.key][a]?'checked':''}> ${m.labels[i]}</label>`).join('')}
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  document.getElementById('modalSave').onclick = async () => {
+    if(!f_role_name.value||!f_display_name.value){toast('请填写角色标识和显示名称','error');return;}
+    const perms = {};
+    document.querySelectorAll('.perm-module input[type=checkbox]').forEach(cb => {
+      if(!perms[cb.dataset.mod]) perms[cb.dataset.mod] = {};
+      perms[cb.dataset.mod][cb.dataset.act] = cb.checked;
+    });
+    const data = {display_name:f_display_name.value,description:f_desc.value,permissions:perms};
+    if(!id) data.role_name = f_role_name.value;
+    if(id) await api('/api/roles/'+id,{method:'PUT',body:JSON.stringify(data)});
+    else await api('/api/roles',{method:'POST',body:JSON.stringify(data)});
+    closeModal(); loadRoles(); loadUsers(); toast(id?'更新成功':'创建成功');
+  };
+  document.getElementById('modalOverlay').classList.add('show');
+}
+async function delRole(id, name) {
+  if(!confirm(`确认删除角色 ${name}？`)) return;
+  const r = await api('/api/roles/'+id,{method:'DELETE'});
+  if(r && !r.error) { loadRoles(); toast('已删除'); } else toast(r.error||'操作失败','error');
+}
+
+// ==================== 模态框 ====================
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+// ==================== 初始化 ====================
+async function init() {
+  orgsCache = (await api('/api/organizations')) || [];
+  contactsCache = (await api('/api/contacts')) || [];
+  dealsCache = (await api('/api/deals')) || [];
+  loadDashboard();
+}
+
+// 启动认证检查
+checkAuth();
+</script>
+</body>
+</html>

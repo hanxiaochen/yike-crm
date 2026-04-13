@@ -3,15 +3,13 @@
 一款简洁实用的客户关系管理系统，采用 Flask + Vue3 技术栈开发。
 
 > **截图预览** 
-> 
-> 以下截图展示了系统的各个功能模块（截图位于 `/docs/screenshots/` 目录）：
-> 
-> - dashboard.png - 数据分析仪表盘
-> - customer.png - 客户管理界面
-> - contact.png - 联系人管理界面
-> - opportunity.png - 销售机会管理界面
-> - contract.png - 合同管理界面
-> - invoice.png - 发票管理界面
+> <img width="2304" height="1060" alt="image" src="https://github.com/user-attachments/assets/05261bc1-b804-4c12-9da6-a3a9b6eed7e5" />
+<img width="4608" height="2120" alt="fd48d09b-1f51-4294-b32b-f3c24d46ddd2" src="https://github.com/user-attachments/assets/fa58a8d2-aa0c-422b-824a-afb2933e28be" />
+<img width="2304" height="1060" alt="image" src="https://github.com/user-attachments/assets/a2fac9a0-cc14-4d63-8fd2-9aaa9dd6267d" />
+<img width="2304" height="1060" alt="image" src="https://github.com/user-attachments/assets/f247d5f7-52f9-4834-8d90-59b745421496" />
+<img width="2304" height="1060" alt="image" src="https://github.com/user-attachments/assets/4e62c258-922b-4b57-8b0f-57297a6d3b80" />
+<img width="2304" height="1060" alt="image" src="https://github.com/user-attachments/assets/e6f88e5f-6e2c-4f80-b560-7a551e242f17" />
+
 
 ---
 
